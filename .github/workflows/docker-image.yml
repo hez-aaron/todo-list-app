@@ -25,6 +25,8 @@ jobs:
         run: yarn install --immutable
 
       - name: Run Tests
+        env:
+          DATA_DIR: ./tmp/todos
         run: yarn test
   
   build:
