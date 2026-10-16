@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'yarn'
 
       - name: Install Dependencies
@@ -26,9 +26,7 @@ jobs:
 
       - name: Run Tests
         env:
-          DATA_DIR: ./tmp/todos
-          DB_DIR: ./tmp/todos/todo.db
-          NODE_ENV: test
+          SQLITE_DB_LOCATION: ./tmp/todos/todo.db
         run: yarn test
   
   build:
