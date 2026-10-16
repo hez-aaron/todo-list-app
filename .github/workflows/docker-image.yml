@@ -27,6 +27,8 @@ jobs:
       - name: Run Tests
         env:
           DATA_DIR: ./tmp/todos
+          DB_DIR: ./tmp/todos/todo.db
+          NODE_ENV: test
         run: yarn test
   
   build:
