@@ -46,5 +46,5 @@ jobs:
           image-ref: ${{ env.image_tag }}
           format: 'table'
           vuln-type: 'os,library'
-          severity: 'Critical,High'
+          severity: 'CRITICAL,HIGH'
           exit-code: '1'
