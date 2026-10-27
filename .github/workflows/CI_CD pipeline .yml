@@ -1,0 +1,50 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+    
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --immutable
+
+      - name: Run Tests
+        env:
+          SQLITE_DB_LOCATION: ./tmp/todos/todo.db
+        run: yarn test
+  
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the Docker image
+        run: |
+          image_tag="todo_app:v$(date +%s)"
+          echo "image_tag=$image_tag" >> $GITHUB_ENV
+          docker build -t $image_tag .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.image_tag }}
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'Critical,High'
+          exit-code: '1'
