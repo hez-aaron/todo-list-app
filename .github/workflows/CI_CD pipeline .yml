@@ -40,19 +40,12 @@ jobs:
           echo "image_tag=$image_tag" >> $GITHUB_ENV
           docker build -t $image_tag .
 
-      - name: Inspect Node package dependency tree
-        run: |
-          # Install the Trivy CLI binary directly onto the runner
-          curl -sfL https://githubusercontent.com | sh -s -- -b /usr/local/bin
-          
-          # Print the tree for node packages
-          trivy image --dependency-tree --pkg-types library ${{ env.image_tag }}
-          
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.image_tag }}
           format: 'table'
+          args: '--dependency-tree' 
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
