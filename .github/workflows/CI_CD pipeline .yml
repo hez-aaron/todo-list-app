@@ -45,8 +45,7 @@ jobs:
         with:
           image-ref: ${{ env.image_tag }}
           format: 'table'
-          args: '--dependency-tree' 
-          vuln-type: 'os,library'
+          vuln-type: 'os'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
           exit-code: '1'
