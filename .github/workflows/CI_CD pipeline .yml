@@ -79,7 +79,7 @@ jobs:
         
       - name: Whitelist GitHub Runner IP
         run: |
-          aws ec2 authorize-security-group-inbound \
+          aws ec2 authorize-security-group-ingress \
             --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
             --protocol tcp \
             --port 22 \
@@ -102,7 +102,7 @@ jobs:
       - name: Revoke GitHub Runner IP
         if: always()
         run: |
-          aws ec2 revoke-security-group-inbound \
+          aws ec2 revoke-security-group-ingress \
           --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }}
           --protocol tcp \
           --port 22 \
