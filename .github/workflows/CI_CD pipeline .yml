@@ -68,7 +68,9 @@ jobs:
         
       - name: Get GitHUb Runner IP
         id: ip
-        run: echo "ipv4=$(curl -s https://ipify.org)" >> GITHUB
+        run: |
+          RUNNER_IP=$(curl -s https://ipify.org || curl -s https://ifconfig.me || curl -s https://icanhazip.com)
+          echo "ipv4=$RUNNER_IP" >> GITHUB_OUTPUT
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
