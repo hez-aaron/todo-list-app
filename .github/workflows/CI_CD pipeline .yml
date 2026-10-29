@@ -69,8 +69,8 @@ jobs:
       - name: Get GitHUb Runner IP
         id: ip
         run: |
-          RUNNER_IP=$(curl -s https://ipify.org || curl -s https://ifconfig.me || curl -s https://icanhazip.com)
-          echo "ipv4=$RUNNER_IP" >> GITHUB_OUTPUT
+          RUNNER_IP=$(curl -s https://api.ipify.org || curl -s https://ifconfig.me || curl -s https://icanhazip.com)
+          echo "ipv4=${RUNNER_IP}" >> $GITHUB_OUTPUT
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -82,8 +82,10 @@ jobs:
       - name: Whitelist GitHub Runner IP
         run: |
           aws ec2 authorize-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "${{ steps.ip.outputs.ipv4 }}/32"}]}]'
+            --group-id secrets.AWS_SECURITY_GROUP_ID \
+            --protocol tcp \
+            --port 443 \
+            --cidr "${{ steps.ip.outputs.ipv4 }}/32"
             
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -102,6 +104,8 @@ jobs:
       - name: Revoke GitHub Runner IP
         if: always()
         run: |
-          aws ec2 revoke-security-group-ingress \
-          --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }}
-          --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "${{ steps.ip.outputs.ipv4 }}/32"}]}]'
+          aaws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
