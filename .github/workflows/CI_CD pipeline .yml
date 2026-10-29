@@ -81,9 +81,7 @@ jobs:
         run: |
           aws ec2 authorize-security-group-ingress \
             --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+            --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "${{ steps.ip.outputs.ipv4 }}/32"}]}]'
             
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -104,6 +102,4 @@ jobs:
         run: |
           aws ec2 revoke-security-group-ingress \
           --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }}
-          --protocol tcp \
-          --port 22 \
-          --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "IpRanges": [{"CidrIp": "${{ steps.ip.outputs.ipv4 }}/32"}]}]'
