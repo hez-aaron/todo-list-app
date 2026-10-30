@@ -69,7 +69,7 @@ jobs:
       - name: Get GitHUb Runner IP
         id: ip
         run: |
-          RUNNER_IP=$(curl -s https://api.ipify.org || curl -s https://ifconfig.me || curl -s https://icanhazip.com)
+          RUNNER_IP=$(curl -s https://api.ipify.org)
           echo "ipv4=${RUNNER_IP}" >> $GITHUB_OUTPUT
         
       - name: Configure AWS Credentials
@@ -83,7 +83,7 @@ jobs:
         run: |
           echo "Whitelisting IP: ${{ steps.ip.outputs.ipv4 }}"
           aws ec2 authorize-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --group-id "${{ secrets.AWS_SECURITY_GROUP_ID }}" \
             --protocol tcp \
             --port 443 \
             --cidr "${{ steps.ip.outputs.ipv4 }}/32"
@@ -96,6 +96,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            echo "Successfully connected via applyboy ssh"
             cd /home/ubuntu/todo-app
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u \
             "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
