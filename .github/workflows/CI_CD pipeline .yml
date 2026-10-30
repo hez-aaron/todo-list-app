@@ -66,27 +66,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v7
         
-      - name: Get GitHUb Runner IP
-        id: ip
-        run: |
-          RUNNER_IP=$(curl -s https://api.ipify.org)
-          echo "ipv4=${RUNNER_IP}" >> $GITHUB_OUTPUT
-        
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-        
-      - name: Whitelist GitHub Runner IP
-        run: |
-          echo "Whitelisting IP: ${{ steps.ip.outputs.ipv4 }}"
-          aws ec2 authorize-security-group-ingress \
-            --group-id "${{ secrets.AWS_SECURITY_GROUP_ID }}" \
-            --protocol tcp \
-            --port 443 \
-            --cidr "${{ steps.ip.outputs.ipv4 }}/32"
             
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -96,18 +81,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            echo "Successfully connected via applyboy ssh"
             cd /home/ubuntu/todo-app
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u \
             "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker compose pull
             docker compose up -d --remove-orphans
-            
-      - name: Revoke GitHub Runner IP
-        if: always()
-        run: |
-          aaws ec2 revoke-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
